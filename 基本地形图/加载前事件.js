@@ -378,6 +378,41 @@ function showFormError(msg) {
 }
 
 /**
+ * 根据新图号获取坐标范围并赋值
+ * @param {Object} co
+ * @param {string} mapNo
+ * @param {function(string)} successCallback
+ * @param {function()} errorCallback
+ */
+function fetchAndSetCoordByMapNo(co, mapNo, successCallback, errorCallback) {
+    co.Http.requestByDirectory(WEBGIS_PUBLIC_BASE + "/invokeSurveyCalculator2", {
+        method: "mapNOToCoordPointsSmallScale",
+        params: {
+            mapNo: mapNo,
+            coordName: "CGCS2000",
+            returnJwd: true,
+            zoneWidth: 0
+        }
+    }, false, "POST", function (dataStr) {
+        try {
+            var oData = parseWebgisResponse(dataStr);
+            var tfzbfw = formatCoordPointsToTfzbfw(oData);
+            if (tfzbfw) {
+                setMainFieldValue(co, "tfzbfw", tfzbfw, true);
+            }
+            if (successCallback) {
+                successCallback(tfzbfw);
+            }
+        } catch (e) {
+            console.error(e);
+            if (errorCallback) {
+                errorCallback();
+            }
+        }
+    });
+}
+
+/**
  * 根据图号计算坐标（按钮调用）
  */
 window.calcCoordByXth = function () {
@@ -392,29 +427,16 @@ window.calcCoordByXth = function () {
         return;
     }
     co.Progress.baseProgressFake("提示", 10000, "正在根据图号计算坐标", null, null);
-    co.Http.requestByDirectory(WEBGIS_PUBLIC_BASE + "/invokeSurveyCalculator2", {
-        method: "mapNOToCoordPointsSmallScale",
-        params: {
-            mapNo: xth,
-            coordName: "CGCS2000",
-            returnJwd: true,
-            zoneWidth: 0
-        }
-    }, false, "POST", function (dataStr) {
+    fetchAndSetCoordByMapNo(co, xth, function (tfzbfw) {
         co.Progress.baseProgressClose();
-        try {
-            var oData = parseWebgisResponse(dataStr);
-            var tfzbfw = formatCoordPointsToTfzbfw(oData);
-            if (tfzbfw) {
-                setMainFieldValue(co, "tfzbfw", tfzbfw, true);
-                co.Message.success_middle("坐标计算成功！");
-            } else {
-                co.Message.error_middle("未获取到有效范围线坐标！");
-            }
-        } catch (e) {
-            console.error(e);
-            co.Message.error_middle("坐标计算失败！");
+        if (tfzbfw) {
+            co.Message.success_middle("坐标计算成功！");
+        } else {
+            co.Message.error_middle("未获取到有效范围线坐标！");
         }
+    }, function () {
+        co.Progress.baseProgressClose();
+        co.Message.error_middle("坐标计算失败！");
     });
 };
 
@@ -424,7 +446,7 @@ window.calcCoordByXth = function () {
  * @param {string} xth
  */
 function doCalcOldMapNoAndScaleByXth(co, xth) {
-    co.Progress.baseProgressFake("提示", 10000, "正在计算旧图号和比例尺", null, null);
+    co.Progress.baseProgressFake("提示", 10000, "正在计算旧图号、比例尺和坐标范围", null, null);
     co.Http.requestByDirectory(WEBGIS_PUBLIC_BASE + "/convertMapSheetNumber", {
         mapNo: xth,
         convertType: "newToOld"
@@ -441,19 +463,46 @@ function doCalcOldMapNoAndScaleByXth(co, xth) {
 
             setMainFieldValue(co, "jth", jth, true);
 
-            fetchAndSetScaleByMapNo(co, xth, function (blc, scaleDenominator) {
+            var pendingCount = 2;
+            var blc = "";
+            var tfzbfw = "";
+            var scaleDenominator = "";
+
+            function finishCalcOldMapNoAndScale() {
+                pendingCount--;
+                if (pendingCount > 0) {
+                    return;
+                }
                 co.Progress.baseProgressClose();
-                if (blc) {
-                    setMainFieldValue(co, "blc", blc, true);
-                    co.Message.success_middle("旧图号和比例尺计算成功！");
+                if (blc && tfzbfw) {
+                    co.Message.success_middle("旧图号、比例尺和坐标范围计算成功！");
+                } else if (blc) {
+                    co.Message.success_middle("旧图号和比例尺计算成功，但未获取到坐标范围！");
+                } else if (tfzbfw) {
+                    co.Message.success_middle("旧图号和坐标范围计算成功，但未获取到比例尺！");
                 } else if (scaleDenominator) {
                     co.Message.error_middle("比例尺值 " + scaleDenominator + " 无法匹配下拉选项！");
                 } else {
-                    co.Message.success_middle("旧图号计算成功，但未获取到比例尺！");
+                    co.Message.success_middle("旧图号计算成功，但未获取到比例尺和坐标范围！");
                 }
+            }
+
+            fetchAndSetScaleByMapNo(co, xth, function (blcValue, scaleDenominatorValue) {
+                blc = blcValue;
+                scaleDenominator = scaleDenominatorValue;
+                if (blc) {
+                    setMainFieldValue(co, "blc", blc, true);
+                }
+                finishCalcOldMapNoAndScale();
             }, function () {
-                co.Progress.baseProgressClose();
-                co.Message.error_middle("比例尺计算失败！");
+                finishCalcOldMapNoAndScale();
+            });
+
+            fetchAndSetCoordByMapNo(co, xth, function (tfzbfwValue) {
+                tfzbfw = tfzbfwValue;
+                finishCalcOldMapNoAndScale();
+            }, function () {
+                finishCalcOldMapNoAndScale();
             });
         } catch (e) {
             co.Progress.baseProgressClose();
