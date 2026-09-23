@@ -1,0 +1,8 @@
+-- 行政文书公共字段说明（各表均包含以下字段，不含 WEBDOCUMENT）
+-- rid CHAR(36) 主键
+-- code BIGINT 序列号
+-- jid, sys_parentrid 工作流预留
+-- jsbh 接收编号 | zlmc 资料名称 | hjdw 汇交单位 | hjrq 移交日期
+-- hjr 移交人 | jsr 接收人 | cdbh 存档编号
+-- zzdawz 纸质档案位置 | dzdawz 电子档案位置 | dzsj 电子数据(JSON)
+-- createtime/createuser/lastmodifytime/lastmodifyuser 审计字段

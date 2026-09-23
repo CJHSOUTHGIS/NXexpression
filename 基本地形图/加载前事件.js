@@ -1,4 +1,5 @@
 var WEBGIS_PUBLIC_BASE = "/sinfoweb/webgis/public";
+var BMH_PREFIX = "64";
 /**
  * 解析 webgis 接口返回
  * @param {string|Object} dataStr
@@ -592,6 +593,134 @@ window.calcNewMapNoAndScaleByJth = function () {
     }
     co.Dialog.confirm("是否根据旧图号计算新图号和比例尺？", "提示", function () {
         doCalcNewMapNoAndScaleByJth(co, jth);
+    });
+};
+
+/**
+ * 取字符串最后一个分隔符后的内容
+ * @param {string} str
+ * @param {string} separator
+ * @returns {string}
+ */
+function getRightOfLast(str, separator) {
+    if (!str) {
+        return "";
+    }
+    var idx = String(str).lastIndexOf(separator);
+    if (idx === -1) {
+        return String(str);
+    }
+    return String(str).substring(idx + separator.length);
+}
+
+/**
+ * 解析数字，无效时返回 0
+ * @param {string|number} val
+ * @returns {number}
+ */
+function parseNumberEx(val) {
+    var num = Number(String(val).trim());
+    if (isNaN(num)) {
+        return 0;
+    }
+    return num;
+}
+
+/**
+ * 重设保密号（按钮调用）
+ */
+window.resetDqbmh = function () {
+    var co = getFormCo();
+    if (!co) {
+        showFormError("表单尚未初始化，请检查加载前事件是否执行成功！");
+        return;
+    }
+    var dqbmh = getMainFieldValue(co, "dqbmh");
+    var iCurIndex = getRightOfLast(dqbmh, "-");
+    var inputVal = String(iCurIndex || "");
+
+    function submitNewBmh() {
+        if (!inputVal) {
+            co.Message.error_middle("请输入保密号数字！");
+            return false;
+        }
+        var iNumber = parseNumberEx(inputVal);
+        if (iNumber <= 0) {
+            co.Message.error_middle("请输入一个大于0的数字！");
+            return false;
+        }
+        setMainFieldValue(co, "dqbmh", BMH_PREFIX + "-" + iNumber, true);
+        co.Message.success_middle("保密号重设成功！");
+        return true;
+    }
+
+    var $modal = null;
+    if (typeof Vue !== "undefined" && Vue.prototype && Vue.prototype.$modal) {
+        $modal = Vue.prototype.$modal;
+    } else if (typeof Sgui !== "undefined" && Sgui.$modal) {
+        $modal = Sgui.$modal;
+    }
+
+    if (!$modal || !$modal.confirm) {
+        var inputNumber = window.prompt("请输入当前保密号（数字）：", iCurIndex);
+        if (inputNumber !== null && inputNumber !== "") {
+            inputVal = inputNumber;
+            submitNewBmh();
+        }
+        return;
+    }
+
+    $modal.confirm({
+        title: "重设保密号",
+        width: 300,
+        closable: true,
+        similar: true,
+        render: function (h) {
+            return h("div", {
+                style: {
+                    padding: "8px 0"
+                }
+            }, [
+                h("div", {
+                    style: {
+                        marginBottom: "10px",
+                        lineHeight: "22px",
+                        color: "#333"
+                    }
+                }, "请输入当前保密号（数字）："),
+                h("input", {
+                    domProps: {
+                        value: inputVal
+                    },
+                    attrs: {
+                        type: "text",
+                        placeholder: "请输入大于0的数字"
+                    },
+                    style: {
+                        width: "100%",
+                        height: "32px",
+                        padding: "0 8px",
+                        border: "1px solid #dcdee2",
+                        borderRadius: "4px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                    },
+                    on: {
+                        input: function (event) {
+                            inputVal = event.target.value;
+                        }
+                    }
+                })
+            ]);
+        },
+        onOk: function () {
+            if (submitNewBmh()) {
+                $modal.remove();
+            }
+        },
+        onCancel: function () {
+            $modal.remove();
+        }
     });
 };
 

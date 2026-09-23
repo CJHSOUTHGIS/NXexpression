@@ -1,0 +1,5 @@
+-- 已有 proj_jbdxt 表（无审计字段）时执行，以兼容 smapweb 通用表单保存
+ALTER TABLE proj_jbdxt ADD COLUMN IF NOT EXISTS createtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE proj_jbdxt ADD COLUMN IF NOT EXISTS createuser VARCHAR(50);
+ALTER TABLE proj_jbdxt ADD COLUMN IF NOT EXISTS lastmodifytime TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE proj_jbdxt ADD COLUMN IF NOT EXISTS lastmodifyuser VARCHAR(50);
