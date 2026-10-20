@@ -67,6 +67,11 @@ CREATE TABLE IF NOT EXISTS proj_cgsqckdj (
     zrl               VARCHAR(100),
     ycl               SMALLINT      DEFAULT 0,
 
+    data_source       VARCHAR(64),
+    data_source_name  VARCHAR(200),
+    external_id       VARCHAR(64),
+    external_sync_time VARCHAR(30),
+
     createtime        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     createuser        VARCHAR(50),
     lastmodifytime    TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
@@ -127,3 +132,7 @@ COMMENT ON COLUMN proj_cgsqckdj.ckr IS '出库人';
 COMMENT ON COLUMN proj_cgsqckdj.ckrq IS '出库日期';
 COMMENT ON COLUMN proj_cgsqckdj.zrl IS '总容量';
 COMMENT ON COLUMN proj_cgsqckdj.ycl IS '已处理: 1已处理 0处理中';
+COMMENT ON COLUMN proj_cgsqckdj.data_source IS '外部数据来源系统编码';
+COMMENT ON COLUMN proj_cgsqckdj.data_source_name IS '外部数据来源系统名称';
+COMMENT ON COLUMN proj_cgsqckdj.external_id IS '外部分发单主键';
+COMMENT ON COLUMN proj_cgsqckdj.external_sync_time IS '最近外部同步时间';
