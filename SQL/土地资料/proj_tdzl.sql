@@ -46,7 +46,7 @@ GRANT SELECT ON v_proj_tdzl TO public;
 
 --********************************************************************************
 
--- 视图：土地资料清单 (人大金仓)
+-- 视图：土地资料清单（以 proj_tdzlqd 为主；可选关联 proj_tdzl 登记表）
 
 --********************************************************************************
 
@@ -69,6 +69,8 @@ SELECT
     rec.hjrq            AS "汇交日期",
 
     rec.jsr             AS "接收人",
+
+    dj.jsrq             AS "接收日期",
 
     rec.jzlx            AS "介质类型",
 
@@ -94,13 +96,21 @@ SELECT
 
     rec.bzsm            AS "备注说明",
 
+    rec.zlmc            AS nodename,
+
     rec.rid             AS "RID",
+
+    rec.createuser      AS "登记人",
+
+    TO_CHAR(rec.createtime, 'YYYY-MM-DD') AS "登记时间",
 
     rec.sys_parentrid   AS "SYS_PARENTRID",
 
     rec.projectdocunid  AS "PROJECTDOCUNID"
 
-FROM proj_tdzlqd rec;
+FROM proj_tdzlqd rec
+
+LEFT JOIN proj_tdzl dj ON dj.rid = rec.sys_parentrid;
 
 
 

@@ -17,6 +17,7 @@ SELECT
     rec.kssj            AS "开始时间",
     rec.zzsj            AS "终止时间",
     rec.lx              AS "类型",
+    rec.sjlx            AS "数据类型",
     rec.hjsj            AS "汇交时间",
     rec.mjmc            AS "密级",
     rec.bhq             AS "保护期",
