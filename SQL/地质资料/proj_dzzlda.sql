@@ -1,7 +1,9 @@
 --********************************************************************************
 -- 视图：地质资料档案 (人大金仓)
 --********************************************************************************
-CREATE OR REPLACE VIEW v_proj_dzzlda AS
+DROP VIEW IF EXISTS v_proj_dzzlda;
+
+CREATE VIEW v_proj_dzzlda AS
 SELECT
     rec.parentdocunid AS code,
     rec.dh              AS "档号",

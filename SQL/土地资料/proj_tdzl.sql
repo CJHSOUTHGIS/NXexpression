@@ -50,7 +50,9 @@ GRANT SELECT ON v_proj_tdzl TO public;
 
 --********************************************************************************
 
-CREATE OR REPLACE VIEW v_proj_tdzlqd AS
+DROP VIEW IF EXISTS v_proj_tdzlqd;
+
+CREATE VIEW v_proj_tdzlqd AS
 
 SELECT
 
