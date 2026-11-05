@@ -16,6 +16,7 @@
 --   v_ckjl_qt    其它资料       ← proj_ckqd_qt    / cgqd11 / VIEW_CKJL_QT
 --   v_ckjl_ghcg  规划成果       ← proj_ckqd_ghcg  / cgqd12
 --   v_ckjl_sjsw  实景三维       ← proj_ckqd_sjsw  / cgqd13
+--   v_ckjl_qtcg  其他成果       ← proj_ckqd_qtcg  / cgqd14
 --********************************************************************************
 
 -- 基本地形图出库记录（v_ckjl_dxt / proj_ckqd_dxt / cgqd1）
@@ -301,6 +302,27 @@ SELECT
 FROM proj_ckqd_sjsw cr
 INNER JOIN proj_cgsqckdj m ON m.rid = cr.parent_rid;
 
+-- 其他成果出库记录（v_ckjl_qtcg / proj_ckqd_qtcg / cgqd14）
+CREATE OR REPLACE VIEW v_ckjl_qtcg AS
+SELECT
+    m.rid              AS code,
+    m.parentdocunid    AS parentdocunid,
+    m.sqdwmc           AS "单位名称",
+    m.gksx             AS "归口属性",
+    m.gkdw             AS "归口单位",
+    m.sqyt             AS "用途类型",
+    m.syfs             AS "使用方式",
+    m.ffbh             AS "分发单号",
+    m.ckrq             AS "出库日期",
+    cr.zlmc            AS "资料名称",
+    cr.cdbh            AS "存档编号",
+    cr.hjdw            AS "汇交单位",
+    cr.ztxs            AS "载体形式",
+    cr.sl              AS "数量",
+    m.rid              AS "RID"
+FROM proj_ckqd_qtcg cr
+INNER JOIN proj_cgsqckdj m ON m.rid = cr.parent_rid;
+
 GRANT SELECT ON v_ckjl_dxt TO public;
 GRANT SELECT ON v_ckjl_hp TO public;
 GRANT SELECT ON v_ckjl_wp TO public;
@@ -314,3 +336,4 @@ GRANT SELECT ON v_ckjl_chxm TO public;
 GRANT SELECT ON v_ckjl_qt TO public;
 GRANT SELECT ON v_ckjl_ghcg TO public;
 GRANT SELECT ON v_ckjl_sjsw TO public;
+GRANT SELECT ON v_ckjl_qtcg TO public;
